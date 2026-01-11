@@ -2,286 +2,170 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Anh hùng cứu Lão Hạc</title>
+<title>Giải cứu Lão Hạc</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body{margin:0;overflow:hidden;font-family:Segoe UI,sans-serif;background:#000}
-
-/* GAME AREA */
+body{margin:0;font-family:Segoe UI,sans-serif;background:#000}
 #game{
- width:100vw; height:100vh;
- position:relative;
- overflow:hidden;
- background:url("background.jpg") repeat-x;
- background-size:cover;
+ width:100vw;height:100vh;
+ background:
+ linear-gradient(to bottom,rgba(0,0,0,.6),rgba(0,0,0,.9)),
+ url("laohac1.jpg") center/cover no-repeat;
+ color:white;position:relative;
 }
 
-/* SCREENS */
-.screen{
- position:absolute; top:0; left:0;
- width:100%; height:100%;
- background:rgba(0,0,0,0.85);
- display:flex; flex-direction:column;
- align-items:center; justify-content:center;
- color:white; z-index:10;
-}
-.hidden{display:none}
-button{
- padding:14px 36px; font-size:22px; border:none;
- border-radius:40px; background:linear-gradient(135deg,#ffd000,#ff8c00);
- font-weight:bold; cursor:pointer;
+/* Top bar */
+#topBar{
+ position:absolute;top:0;left:0;
+ width:100%;height:60px;
+ background:rgba(0,0,0,.7);
+ display:flex;align-items:center;
+ justify-content:space-between;
+ padding:0 15px;box-sizing:border-box;
 }
 
-/* HUD */
-#hud{
- position:absolute;top:10px;left:10px;color:white;font-size:16px;z-index:5;
-}
-#hpWrap{width:160px;height:14px;border:2px solid white;border-radius:10px;overflow:hidden;margin-top:5px;}
-#hpBar{height:100%;width:100%;background:linear-gradient(to right,#00ff55,#aaff00);}
+#hpWrap{width:180px;height:14px;border:2px solid white;border-radius:10px;overflow:hidden}
+#hpBar{height:100%;background:linear-gradient(to right,#00ff55,#aaff00);width:100%}
 
-/* WORLD */
-#ground{
- position:absolute;bottom:0;left:0;width:100%;height:80px;background:#333;
-}
-
-/* HERO */
-#hero{
- position:absolute;bottom:80px;left:80px;width:60px;height:80px;
- background:url("hero.png") center/contain no-repeat;
- transition: bottom 0.1s linear;
-}
-
-/* OBSTACLE */
-.obstacle{
- position:absolute;bottom:80px;width:50px;height:50px;
- background:url("rock.png") center/contain no-repeat;
-}
-
-/* GATE */
-#gate{
- position:absolute;bottom:80px;width:80px;height:100px;
- background:url("gate.png") center/contain no-repeat;
-}
-
-/* QUESTION BOX */
+/* Question box (fixed centering) */
 #questionBox{
- position:absolute;bottom:100px;left:0;right:0;margin:auto;
- width:92%;max-width:600px;background:rgba(0,0,0,0.9);
- border-radius:20px;padding:20px;color:white;z-index:9;display:none;
+ position:absolute;
+ bottom:40px;
+ left:0;
+ right:0;
+ margin:auto;
+ width:92%;
+ max-width:700px;
+ background:rgba(0,0,0,.85);
+ border-radius:20px;
+ padding:20px;
+ box-shadow:0 0 40px rgba(255,200,50,.4);
+ box-sizing:border-box;
 }
-textarea{width:100%;height:80px;border-radius:10px;border:none;padding:10px;font-size:16px;}
+
+#q{font-size:20px;font-weight:bold;margin-bottom:10px}
+textarea{
+ width:100%;
+ height:80px;
+ border-radius:10px;
+ border:none;
+ padding:10px;
+ font-size:16px;
+ box-sizing:border-box;
+}
+
+button{
+ margin-top:10px;
+ background:linear-gradient(135deg,#ffd000,#ff9900);
+ border:none;
+ padding:12px 30px;
+ font-size:18px;
+ border-radius:30px;
+ cursor:pointer;
+ font-weight:bold;
+}
+button:hover{transform:scale(1.05)}
 </style>
 </head>
+
 <body>
 
 <div id="game">
 
-<!-- START SCREEN -->
-<div id="startScreen" class="screen">
- <h1>🏃 Anh hùng cứu Lão Hạc</h1>
- <p>Chạy – Nhảy – Trả lời câu hỏi để vượt bi kịch</p>
- <button id="btnStart">BẮT ĐẦU</button>
-</div>
+ <div id="topBar">
+   <div>❤️ <div id="hpWrap"><div id="hpBar"></div></div></div>
+   <div id="levelText">Level 1</div>
+   <div id="leaderboard">🏆 BXH</div>
+ </div>
 
-<!-- GAME OVER SCREEN -->
-<div id="gameOver" class="screen hidden">
- <h1>💀 GAME OVER</h1>
- <button id="btnRestart">CHƠI LẠI</button>
-</div>
-
-<!-- HUD -->
-<div id="hud">❤️ Máu<div id="hpWrap"><div id="hpBar"></div></div></div>
-
-<!-- WORLD -->
-<div id="hero"></div>
-<div id="ground"></div>
-
-<!-- QUESTION BOX -->
-<div id="questionBox">
- <div id="q"></div>
- <textarea id="ans"></textarea>
- <button id="btnAnswer">VƯỢT CỔNG</button>
-</div>
+ <div id="questionBox">
+  <div id="q"></div>
+  <textarea id="ans" placeholder="Nhập câu trả lời..."></textarea>
+  <button onclick="submit()">VƯỢT QUA</button>
+ </div>
 
 </div>
+
+<audio id="winSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_41f10929c7.mp3"></audio>
+<audio id="loseSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_1b8bb6f2c5.mp3"></audio>
 
 <script>
-window.onload = function(){
-
-// =====================
-// KHAI BÁO BIẾN
-// =====================
-const hero = document.getElementById("hero");
-const game = document.getElementById("game");
-const ans = document.getElementById("ans");
-const startScreen = document.getElementById("startScreen");
-const gameOverScreen = document.getElementById("gameOver");
-const questionBox = document.getElementById("questionBox");
-
-let heroY=0, velY=0, gravity=0.8, jumping=false;
-let obstacles=[], gate=null;
-let hp=100, qIndex=0, playing=false;
-let gameLoopId;
-let bgX=0;
-
-// =====================
-// CÂU HỎI
-// =====================
-const questions=[
-{q:"Tác giả Lão Hạc là ai?",keys:["nam cao"]},
-{q:"Cậu Vàng là con gì?",keys:["chó"]},
-{q:"Vì sao lão Hạc bán Cậu Vàng?",keys:["nghèo"]},
+const levels=[
+[
+{q:"Lão Hạc là nhân vật của tác giả nào?",keys:["nam cao"]},
+{q:"Cậu Vàng là con vật gì?",keys:["chó"]},
 {q:"Hoàn cảnh sống của lão Hạc?",keys:["nghèo","cô đơn"]},
+],
+[
+{q:"Vì sao lão Hạc bán Cậu Vàng?",keys:["nghèo","con","vườn"]},
 {q:"Tâm trạng lão Hạc sau khi bán chó?",keys:["đau","ân hận","day dứt"]},
-{q:"Biểu hiện lòng tự trọng của lão Hạc?",keys:["tự trọng","không nhận"]},
-{q:"Vai trò của ông giáo trong truyện?",keys:["chứng kiến","nhân đạo"]},
-{q:"Giá trị hiện thực của Lão Hạc?",keys:["xã hội","nghèo"]},
-{q:"Giá trị nhân đạo của truyện?",keys:["nhân đạo","cảm thông"]},
-{q:"Ý nghĩa cái chết của lão Hạc?",keys:["bi kịch","tố cáo"]},
+{q:"Ý nghĩa hình tượng Cậu Vàng?",keys:["con","kỉ vật","niềm an ủi"]},
+],
+[
+{q:"Biểu hiện lòng tự trọng của lão Hạc?",keys:["tự trọng","không nhận","chết"]},
+{q:"Vai trò ông giáo?",keys:["nhân đạo","chứng kiến","kể"]},
+],
+[
+{q:"Giá trị nhân đạo truyện?",keys:["nhân đạo","cảm thông","phẩm giá"]},
+{q:"Ý nghĩa cái chết của lão Hạc?",keys:["tố cáo","xã hội","bi kịch"]},
+]
 ];
 
-// =====================
-// START / RESET
-// =====================
-function startGame(){
- startScreen.classList.add("hidden");
- playing=true;
- spawnObstacle();
- loop();
+let level=0,questionIndex=0,hp=100;
+
+function updateHP(){
+ document.getElementById("hpBar").style.width=hp+"%";
+ document.getElementById("levelText").innerText="Level "+(level+1);
 }
 
-function resetGame(){
- location.reload();
+function submit(){
+ let a=document.getElementById("ans").value.toLowerCase();
+ let k=levels[level][questionIndex].keys;
+ let hit=0; k.forEach(x=>{if(a.includes(x))hit++;});
+
+ if(hit>=2){} else{hp-=25;updateHP();}
+
+ questionIndex++;
+ next();
 }
 
-// =====================
-// LOOP GAME
-// =====================
-function loop(){
- if(!playing) return;
+function next(){
+ if(questionIndex>=levels[level].length){
+  level++;questionIndex=0;
+  if(level>=levels.length){end(true);return;}
+  alert("🎯 Sang cấp độ "+(level+1));
+ }
+ document.getElementById("q").innerText="Level "+(level+1)+" – "+levels[level][questionIndex].q;
+ document.getElementById("ans").value="";
+ if(hp<=0) end(false);
+}
 
- // nền parallax
- bgX -= 2;
- game.style.backgroundPositionX = bgX + "px";
-
- // gravity
- velY += gravity;
- heroY += velY;
- if(heroY<0){ heroY=0; velY=0; jumping=false; }
- hero.style.bottom = (80+heroY)+"px";
-
- // obstacles
- obstacles.forEach(o=>{
-  o.x -= 6;
-  o.el.style.left = o.x+"px";
-  if(checkHit(o.el)){
-   hp-=20; updateHP();
-   o.x=-100;
-   if(hp<=0) endGame();
-  }
- });
-
- // gate
- if(gate){
-  gate.x -= 6;
-  gate.el.style.left = gate.x+"px";
-  if(checkHit(gate.el)){
-   openQuestion();
-  }
+function end(win){
+ if(win){
+  document.getElementById("winSound").play();
+  let name=prompt("Tên bạn:");
+  let board=JSON.parse(localStorage.getItem("bxh")||"[]");
+  board.push({name,score:hp});
+  board.sort((a,b)=>b.score-a.score);
+  localStorage.setItem("bxh",JSON.stringify(board.slice(0,5)));
+  alert("🎉 Bạn đã cứu được Lão Hạc!");
+ } else {
+  document.getElementById("loseSound").play();
+  alert("💀 Lão Hạc gục ngã!");
  }
 
- gameLoopId = requestAnimationFrame(loop);
+ level=0;questionIndex=0;hp=100;updateHP();
+ showBoard();next();
 }
 
-// =====================
-// NHẢY
-// =====================
-document.addEventListener("keydown", e=>{
- if(e.code==="Space" && !jumping){ velY=15; jumping=true; }
-});
-document.addEventListener("touchstart", ()=>{
- if(!jumping){ velY=15; jumping=true; }
-});
-
-// =====================
-// SPAWN OBSTACLE & GATE
-// =====================
-function spawnObstacle(){
- let o = document.createElement("div");
- o.className="obstacle";
- o.x = window.innerWidth;
- o.style.left = o.x + "px";
- game.appendChild(o);
- obstacles.push({el:o,x:o.x});
- setTimeout(spawnGate, 4000);
- setTimeout(spawnObstacle, Math.random()*2000+2000);
+function showBoard(){
+ let b=JSON.parse(localStorage.getItem("bxh")||"[]");
+ let h="";b.forEach(x=>h+=x.name+" : "+x.score+"<br>");
+ document.getElementById("leaderboard").innerHTML="🏆 BXH<br>"+h;
 }
 
-function spawnGate(){
- if(gate) return;
- gate={el:document.createElement("div"),x:window.innerWidth};
- gate.el.id="gate";
- gate.el.style.left = gate.x+"px";
- game.appendChild(gate.el);
-}
-
-// =====================
-// COLLISION
-// =====================
-function checkHit(el){
- let h = hero.getBoundingClientRect();
- let o = el.getBoundingClientRect();
- return !(h.right < o.left || h.left > o.right || h.bottom < o.top || h.top > o.bottom);
-}
-
-// =====================
-// CÂU HỎI
-// =====================
-function openQuestion(){
- playing=false;
- if(gate){ gate.el.remove(); gate=null; }
- questionBox.style.display="block";
- document.getElementById("q").innerText = questions[qIndex].q;
-}
-
-function checkAnswer(){
- let a = ans.value.toLowerCase();
- let hit = 0;
- questions[qIndex].keys.forEach(k=>{ if(a.includes(k)) hit++; });
- questionBox.style.display="none";
- ans.value="";
- qIndex++;
- if(hit<1){ hp -=20; updateHP(); }
- if(qIndex>=questions.length){ alert("🎉 Đã cứu được Lão Hạc!"); resetGame(); return; }
- playing=true;
- spawnObstacle();
-}
-
-// =====================
-// HUD
-// =====================
-function updateHP(){
- document.getElementById("hpBar").style.width = hp+"%";
-}
-
-// =====================
-// END GAME
-// =====================
-function endGame(){
- playing=false;
- gameOverScreen.classList.remove("hidden");
-}
-
-// =====================
-// BUTTON EVENTS
-// =====================
-document.getElementById("btnStart").addEventListener("click", startGame);
-document.getElementById("btnRestart").addEventListener("click", resetGame);
-document.getElementById("btnAnswer").addEventListener("click", checkAnswer);
-
-// INIT
-updateHP();
-}
+showBoard();updateHP();next();
 </script>
 
 </body>
