@@ -2,154 +2,138 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Lão Hạc – Kiểm tra Ngữ văn</title>
+<title>Giải cứu Lão Hạc</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{
- margin:0;font-family:"Times New Roman",serif;
- background:#f3ede2;color:#3b2a1a;
+body{margin:0;font-family:Arial;background:#111;color:white}
+#game{position:relative;width:100vw;height:100vh;overflow:hidden;
+ background:url("laohac1.jpg") center/cover;}
+#laohac{position:absolute;bottom:80px;left:40px;width:100px;transition:.2s;}
+#ground{position:absolute;bottom:0;width:100%;height:80px;background:#3b2a1a}
+#hpWrap{position:absolute;top:10px;left:10px;width:200px;height:20px;border:2px solid #fff}
+#hpBar{height:100%;background:lime;width:100%}
+#questionBox{
+ position:absolute;bottom:100px;left:50%;transform:translateX(-50%);
+ background:rgba(0,0,0,.8);padding:15px;border-radius:10px;width:90%;
 }
-.hero{
- min-height:100vh;
- background:linear-gradient(rgba(0,0,0,.7),rgba(0,0,0,.7)),url("laohac1.jpg") center/cover;
- display:flex;align-items:center;justify-content:center;color:#fff;
-}
-.hero-box{
- background:rgba(0,0,0,.75);padding:40px;
- border-radius:20px;border:2px solid gold;text-align:center;
-}
-.hero-box h1{font-size:40px;margin-bottom:10px}
-.hero-box button{
- padding:15px 40px;font-size:18px;border:none;
- border-radius:30px;background:gold;cursor:pointer;
-}
-
-#exam{
- display:none;max-width:900px;margin:20px auto;
- background:#fff;padding:20px;border-radius:20px;
- box-shadow:0 0 20px rgba(0,0,0,.3)
-}
-.timer{
- background:#6b3e26;color:#fff;padding:8px 20px;
- border-radius:20px;display:inline-block;margin-bottom:10px
-}
-.question{font-size:20px;font-weight:bold}
-img{width:100%;border-radius:15px;margin:10px 0}
-textarea{
- width:100%;height:150px;font-size:16px;
- padding:10px;border-radius:10px;border:1px solid #aaa
-}
-button{
- padding:12px 30px;background:#6b3e26;
- color:#fff;border:none;border-radius:20px;
- cursor:pointer;margin-top:10px
-}
-.correct{background:#b6f7b6;padding:2px 4px;border-radius:5px}
-table{width:100%;border-collapse:collapse;margin-top:15px}
-td,th{border:1px solid #aaa;padding:8px}
+textarea{width:100%;height:70px}
+button{padding:10px 20px;background:gold;border:none;border-radius:10px;font-size:16px}
+#leaderboard{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.7);padding:10px;border-radius:10px}
 </style>
 </head>
 
 <body>
 
-<div class="hero" id="start">
- <div class="hero-box">
-  <h1>LÃO HẠC</h1>
-  <p>10 câu tự luận – Chấm tự động theo từ khóa</p>
-  <button onclick="startExam()">BẮT ĐẦU</button>
+<div id="game">
+ <div id="hpWrap"><div id="hpBar"></div></div>
+ <img id="laohac" src="laohac2.jpg">
+ <div id="ground"></div>
+
+ <div id="questionBox">
+  <div id="q"></div>
+  <textarea id="ans"></textarea>
+  <button onclick="submit()">VƯỢT QUA</button>
  </div>
+
+ <div id="leaderboard"><b>🏆 BXH Lớp</b><div id="board"></div></div>
 </div>
 
-<div id="exam">
- <div class="timer">⏱ <span id="time">60</span> giây</div>
- <div class="question" id="question"></div>
- <img id="qImage">
- <textarea id="answer" placeholder="Nhập câu trả lời..."></textarea>
- <button onclick="submitAnswer()">Nộp</button>
-</div>
+<audio id="winSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_41f10929c7.mp3"></audio>
+<audio id="loseSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_1b8bb6f2c5.mp3"></audio>
 
 <script>
-// ===== CÂU HỎI + TỪ KHÓA (rút từ file của bạn) =====
-const allQuestions=[
- {q:"Tâm trạng của lão Hạc sau khi bán chó?",img:"laohac2.jpg",keys:["đau","day dứt","ân hận","tự trách"]},
- {q:"Vì sao lão Hạc gửi tiền và mảnh vườn cho ông giáo?",img:"laohac3.jpg",keys:["cho con","tài sản","tự trọng","không làm phiền"]},
- {q:"Phân tích lòng tự trọng của lão Hạc.",img:"laohac4.jpg",keys:["tự trọng","không ăn","tiền của con","không nhận","thà chết"]},
- {q:"Cái chết của lão Hạc có phải bi kịch tất yếu không?",img:"laohac5.jpg",keys:["nghèo","bệnh","cô đơn","bế tắc"]},
- {q:"Vai trò của nhân vật ông giáo?",img:"laohac6.jpg",keys:["chứng kiến","kể","nhân đạo"]},
- {q:"Giá trị hiện thực và nhân đạo của tác phẩm?",img:"laohac7.jpg",keys:["tố cáo","xã hội","nhân đạo","cảm thông","phẩm chất"]},
- {q:"So sánh lão Hạc với Chị Dậu.",img:"laohac8.jpg",img:"chidau.jpg",keys:["nghèo","yêu con","phản kháng","cam chịu","nhân phẩm"]},
- {q:"Vì sao Nam Cao để lão Hạc chết bằng bả chó?",img:"laohac9.jpg",keys:["cậu vàng","dằn vặt","bi kịch","tố cáo"]},
- {q:"Mối quan hệ giữa thương con và tự trọng?",img:"laohac10.jpg",keys:["thương con","mảnh vườn","tự trọng","không xin","nhân cách"]},
- {q:"Quan niệm của Nam Cao về phẩm giá con người?",img:"laohac11.jpg",keys:["nhân phẩm","cao quý","niềm tin","con người"]}
+const levels = [
+[
+ {q:"Lão Hạc là nhân vật của tác giả nào?",keys:["nam cao"]},
+ {q:"Cậu Vàng là con vật gì?",keys:["chó"]},
+ {q:"Hoàn cảnh sống của lão Hạc?",keys:["nghèo","cô đơn"]},
+],
+[
+ {q:"Vì sao lão Hạc bán Cậu Vàng?",keys:["nghèo","cho con","mảnh vườn"]},
+ {q:"Tâm trạng lão Hạc sau khi bán chó?",keys:["đau","ân hận","day dứt"]},
+ {q:"Ý nghĩa của Cậu Vàng?",keys:["kỉ vật","con trai","niềm an ủi"]},
+],
+[
+ {q:"Biểu hiện lòng tự trọng của lão Hạc?",keys:["tự trọng","không nhận","thà chết"]},
+ {q:"Vai trò của ông giáo?",keys:["nhân đạo","kể","chứng kiến"]},
+ {q:"Bi kịch của lão Hạc?",keys:["nghèo","cô đơn","bế tắc"]},
+],
+[
+ {q:"Giá trị nhân đạo của truyện?",keys:["nhân đạo","cảm thông","phẩm giá"]},
+ {q:"Vì sao Nam Cao cho lão Hạc chết bằng bả chó?",keys:["cậu vàng","dằn vặt","tố cáo"]},
+ {q:"Quan niệm Nam Cao về con người?",keys:["nhân phẩm","cao quý"]},
+]
 ];
 
-let exam=[...allQuestions].sort(()=>Math.random()-0.5);
-let current=0,timeLeft=60,timer;
-let score=0,log=[];
+let level=0,questionIndex=0,hp=100;
 
-function startExam(){
- document.getElementById("start").style.display="none";
- document.getElementById("exam").style.display="block";
- showQuestion();
+function updateHP(){
+ document.getElementById("hpBar").style.width=hp+"%";
 }
 
-function showQuestion(){
- document.getElementById("question").innerText="Câu "+(current+1)+": "+exam[current].q;
- document.getElementById("qImage").src=exam[current].img;
- document.getElementById("answer").value="";
- timeLeft=60;
- document.getElementById("time").innerText=timeLeft;
- timer=setInterval(()=>{
-  timeLeft--;
-  document.getElementById("time").innerText=timeLeft;
-  if(timeLeft<=0){clearInterval(timer);submitAnswer();}
- },1000);
+function run(){
+ let l=document.getElementById("laohac");
+ l.style.left=(parseInt(l.style.left||40)+100)+"px";
 }
 
-function highlight(text,keys){
- keys.forEach(k=>{
-  let r=new RegExp(k,"gi");
-  text=text.replace(r,`<span class='correct'>${k}</span>`);
- });
- return text;
+function jump(){
+ let l=document.getElementById("laohac");
+ l.style.bottom="200px";
+ setTimeout(()=>l.style.bottom="80px",400);
 }
 
-function submitAnswer(){
- clearInterval(timer);
- let ans=document.getElementById("answer").value.toLowerCase();
- let keys=exam[current].keys;
- let hit=0;keys.forEach(k=>{if(ans.includes(k))hit++;});
- let diem=hit>=2?2:hit==1?1:0;
- score+=diem;
- log.push({q:exam[current].q,a:ans,keys:keys.join(","),s:diem});
- current++;
- if(current<10) showQuestion();
- else finish();
+function submit(){
+ let a=document.getElementById("ans").value.toLowerCase();
+ let k=levels[level][questionIndex].keys;
+ let hit=0; k.forEach(x=>{if(a.includes(x))hit++;});
+
+ if(hit>=2){run();}
+ else{
+  hp-=25;updateHP();jump();
+  if(hp<=0) end(false);
+ }
+
+ questionIndex++;
+ next();
 }
 
-function finish(){
- let html=`<h2>KẾT QUẢ</h2><b>Tổng điểm: ${score}/20</b>
- <table><tr><th>Câu</th><th>Trả lời</th><th>Từ khóa</th><th>Điểm</th></tr>`;
- log.forEach((x,i)=>{
-  html+=`<tr><td>${i+1}</td>
-  <td>${highlight(x.a,x.keys.split(","))}</td>
-  <td>${x.keys}</td><td>${x.s}</td></tr>`;
- });
- html+=`</table><br><button onclick="exportResult()">Xuất file cho GV</button>`;
- document.getElementById("exam").innerHTML=html;
+function next(){
+ if(questionIndex>=levels[level].length){
+  level++;questionIndex=0;
+  if(level>=levels.length){end(true);return;}
+  alert("🎯 Sang cấp độ "+(level+1));
+ }
+ let q=levels[level][questionIndex];
+ document.getElementById("q").innerText="Level "+(level+1)+" – Cửa "+(questionIndex+1)+": "+q.q;
+ document.getElementById("ans").value="";
 }
 
-function exportResult(){
- let t="KẾT QUẢ LÃO HẠC\n\n";
- log.forEach((x,i)=>{t+=`Câu ${i+1}: ${x.q}\n${x.a}\nĐiểm: ${x.s}\n\n`;});
- t+="Tổng: "+score+"/20";
- let b=new Blob([t]);
- let a=document.createElement("a");
- a.href=URL.createObjectURL(b);
- a.download="ketqua_laohac.txt";
- a.click();
+function end(win){
+ if(win){
+  document.getElementById("winSound").play();
+  let name=prompt("Tên bạn?");
+  let board=JSON.parse(localStorage.getItem("bxh")||"[]");
+  board.push({name,score:hp});
+  board.sort((a,b)=>b.score-a.score);
+  localStorage.setItem("bxh",JSON.stringify(board.slice(0,5)));
+  showBoard();
+  alert("🎉 Bạn đã cứu được Lão Hạc!");
+ }else{
+  document.getElementById("loseSound").play();
+  alert("💀 Lão Hạc gục ngã!");
+ }
+ location.reload();
 }
+
+function showBoard(){
+ let board=JSON.parse(localStorage.getItem("bxh")||"[]");
+ let html="";
+ board.forEach(x=>html+=x.name+" : "+x.score+"<br>");
+ document.getElementById("board").innerHTML=html;
+}
+
+showBoard(); updateHP(); next();
 </script>
 
 </body>
