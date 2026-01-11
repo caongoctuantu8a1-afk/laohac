@@ -10,7 +10,7 @@ body{margin:0;overflow:hidden;font-family:Segoe UI,sans-serif;background:#000}
 
 #game{
  width:100vw;height:100vh;
- background:url("background.jpg") center/cover no-repeat;
+ background:#222;
  position:relative;
 }
 
@@ -58,7 +58,7 @@ button{
 #ground{
  position:absolute;bottom:0;left:0;
  width:100%;height:80px;
- background:#222;
+ background:#333;
 }
 
 /* Hero */
@@ -66,7 +66,7 @@ button{
  position:absolute;
  bottom:80px;left:80px;
  width:60px;height:80px;
- background:url("hero.png") center/contain no-repeat;
+ background:red; /* tạm màu đỏ, thay bằng hero.png */
 }
 
 /* Obstacle */
@@ -74,7 +74,7 @@ button{
  position:absolute;
  bottom:80px;
  width:50px;height:50px;
- background:url("rock.png") center/contain no-repeat;
+ background:green; /* tạm màu xanh, thay bằng rock.png */
 }
 
 /* Gate */
@@ -82,7 +82,7 @@ button{
  position:absolute;
  bottom:80px;
  width:80px;height:100px;
- background:url("gate.png") center/contain no-repeat;
+ background:blue; /* tạm màu xanh dương, thay bằng gate.png */
 }
 
 /* Question box */
@@ -114,13 +114,13 @@ textarea{
 <div id="startScreen" class="screen">
  <h1>🏃 Anh hùng cứu Lão Hạc</h1>
  <p>Chạy – Nhảy – Trả lời câu hỏi để vượt bi kịch</p>
- <button onclick="startGame()">BẮT ĐẦU</button>
+ <button id="btnStart">BẮT ĐẦU</button>
 </div>
 
 <!-- GAME OVER -->
 <div id="gameOver" class="screen hidden">
  <h1>💀 GAME OVER</h1>
- <button onclick="resetGame()">CHƠI LẠI</button>
+ <button id="btnRestart">CHƠI LẠI</button>
 </div>
 
 <!-- HUD -->
@@ -137,24 +137,29 @@ textarea{
 <div id="questionBox">
  <div id="q"></div>
  <textarea id="ans"></textarea>
- <button onclick="checkAnswer()">VƯỢT CỔNG</button>
+ <button id="btnAnswer">VƯỢT CỔNG</button>
 </div>
 
 </div>
 
 <script>
+window.onload = function(){
+
 /* ============================
    KHAI BÁO BIẾN
 ============================ */
 const hero = document.getElementById("hero");
 const game = document.getElementById("game");
-
 const ans = document.getElementById("ans");
-let gameLoopId;
+
+const startScreen = document.getElementById("startScreen");
+const gameOverScreen = document.getElementById("gameOver");
+const questionBox = document.getElementById("questionBox");
 
 let heroY=0, velY=0, gravity=0.8, jumping=false;
 let obstacles=[], gate=null;
 let hp=100, qIndex=0, playing=false;
+let gameLoopId;
 
 /* ============================
    CÂU HỎI
@@ -173,10 +178,10 @@ const questions=[
 ];
 
 /* ============================
-   GAME START / RESET
+   START / RESET
 ============================ */
 function startGame(){
- document.getElementById("startScreen").classList.add("hidden");
+ startScreen.classList.add("hidden");
  playing=true;
  spawnObstacle();
  loop();
@@ -195,17 +200,17 @@ function loop(){
  // gravity
  velY += gravity;
  heroY += velY;
- if(heroY < 0){ heroY=0; velY=0; jumping=false; }
- hero.style.bottom = (80 + heroY) + "px";
+ if(heroY<0){ heroY=0; velY=0; jumping=false; }
+ hero.style.bottom = (80+heroY)+"px";
 
  // obstacles
  obstacles.forEach(o=>{
   o.x -= 6;
-  o.el.style.left = o.x + "px";
+  o.el.style.left = o.x+"px";
   if(checkHit(o.el)){
    hp -= 20; updateHP();
    o.x = -100;
-   if(hp <= 0) endGame();
+   if(hp<=0) endGame();
   }
  });
 
@@ -225,14 +230,10 @@ function loop(){
    NHẢY
 ============================ */
 document.addEventListener("keydown", e=>{
- if(e.code==="Space" && !jumping){
-  velY=15; jumping=true;
- }
+ if(e.code==="Space" && !jumping){ velY=15; jumping=true; }
 });
 document.addEventListener("touchstart", ()=>{
- if(!jumping){
-  velY=15; jumping=true;
- }
+ if(!jumping){ velY=15; jumping=true; }
 });
 
 /* ============================
@@ -240,22 +241,20 @@ document.addEventListener("touchstart", ()=>{
 ============================ */
 function spawnObstacle(){
  let o = document.createElement("div");
- o.className = "obstacle";
- o.style.left = window.innerWidth + "px";
+ o.className="obstacle";
+ o.x = window.innerWidth;
+ o.style.left = o.x + "px";
  game.appendChild(o);
- obstacles.push({el:o, x:window.innerWidth});
+ obstacles.push({el:o, x:o.x});
 
- // spawn gate sau 4 giây
  setTimeout(spawnGate, 4000);
-
- // spawn tiếp obstacle khác sau 2-4 giây ngẫu nhiên
  setTimeout(spawnObstacle, Math.random()*2000 + 2000);
 }
 
 function spawnGate(){
- if(gate) return; // tránh spawn nhiều gate
+ if(gate) return;
  gate = {el: document.createElement("div"), x: window.innerWidth};
- gate.el.id = "gate";
+ gate.el.id="gate";
  gate.el.style.left = gate.x + "px";
  game.appendChild(gate.el);
 }
@@ -275,7 +274,7 @@ function checkHit(el){
 function openQuestion(){
  playing=false;
  if(gate){ gate.el.remove(); gate=null; }
- document.getElementById("questionBox").style.display="block";
+ questionBox.style.display="block";
  document.getElementById("q").innerText = questions[qIndex].q;
 }
 
@@ -283,13 +282,13 @@ function checkAnswer(){
  let a = ans.value.toLowerCase();
  let hit = 0;
  questions[qIndex].keys.forEach(k=>{ if(a.includes(k)) hit++; });
- document.getElementById("questionBox").style.display="none";
+ questionBox.style.display="none";
  ans.value = "";
  qIndex++;
  if(hit<1){ hp -= 20; updateHP(); }
- if(qIndex >= questions.length){ 
-  alert("🎉 Đã cứu được Lão Hạc!"); 
-  resetGame(); 
+ if(qIndex >= questions.length){
+  alert("🎉 Đã cứu được Lão Hạc!");
+  resetGame();
   return;
  }
  playing=true;
@@ -300,7 +299,7 @@ function checkAnswer(){
    HUD
 ============================ */
 function updateHP(){
- document.getElementById("hpBar").style.width = hp + "%";
+ document.getElementById("hpBar").style.width = hp+"%";
 }
 
 /* ============================
@@ -308,16 +307,23 @@ function updateHP(){
 ============================ */
 function endGame(){
  playing=false;
- document.getElementById("gameOver").classList.remove("hidden");
+ gameOverScreen.classList.remove("hidden");
 }
+
+/* ============================
+   EVENT BUTTONS
+============================ */
+document.getElementById("btnStart").addEventListener("click", startGame);
+document.getElementById("btnRestart").addEventListener("click", resetGame);
+document.getElementById("btnAnswer").addEventListener("click", checkAnswer);
 
 /* ============================
    INIT
 ============================ */
 updateHP();
 
+}
 </script>
 
 </body>
 </html>
-
