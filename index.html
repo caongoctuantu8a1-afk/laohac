@@ -6,147 +6,90 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{
- margin:0;
- font-family:'Segoe UI',sans-serif;
- background:#0f0f0f;
-}
-
+body{margin:0;font-family:Segoe UI,sans-serif;background:#000}
 #game{
- position:relative;
- width:100vw;
- height:100vh;
+ width:100vw;height:100vh;
  background:
- linear-gradient(to bottom,rgba(0,0,0,.65),rgba(0,0,0,.85)),
+ linear-gradient(to bottom,rgba(0,0,0,.6),rgba(0,0,0,.9)),
  url("laohac1.jpg") center/cover no-repeat;
+ color:white;position:relative;
 }
 
-/* Thanh trên */
+/* Top bar */
 #topBar{
- position:absolute;
- top:0;left:0;
- width:100%;
- height:60px;
+ position:absolute;top:0;left:0;
+ width:100%;height:60px;
  background:rgba(0,0,0,.7);
- display:flex;
- align-items:center;
+ display:flex;align-items:center;
  justify-content:space-between;
- padding:0 15px;
- box-sizing:border-box;
- color:white;
+ padding:0 15px;box-sizing:border-box;
 }
 
-#hpWrap{
- width:180px;
- height:14px;
- border:2px solid white;
- border-radius:10px;
- overflow:hidden;
-}
-#hpBar{
- height:100%;
- background:linear-gradient(to right,#00ff55,#aaff00);
- width:100%;
-}
+#hpWrap{width:180px;height:14px;border:2px solid white;border-radius:10px;overflow:hidden}
+#hpBar{height:100%;background:linear-gradient(to right,#00ff55,#aaff00);width:100%}
 
-/* BXH */
-#leaderboard{
- background:rgba(0,0,0,.6);
- padding:6px 12px;
- border-radius:10px;
- font-size:14px;
-}
-
-/* Khung câu hỏi */
+/* Question */
 #questionBox{
- position:absolute;
- bottom:40px;
- left:50%;
+ position:absolute;bottom:40px;left:50%;
  transform:translateX(-50%);
- width:92%;
- max-width:700px;
+ width:92%;max-width:700px;
  background:rgba(0,0,0,.85);
- border-radius:20px;
- padding:20px;
+ border-radius:20px;padding:20px;
  box-shadow:0 0 40px rgba(255,200,50,.4);
- color:white;
 }
 
-#q{
- font-size:20px;
- margin-bottom:10px;
- font-weight:bold;
-}
-
-textarea{
- width:100%;
- height:80px;
- border-radius:10px;
- border:none;
- padding:10px;
- font-size:16px;
- resize:none;
-}
+#q{font-size:20px;font-weight:bold;margin-bottom:10px}
+textarea{width:100%;height:80px;border-radius:10px;border:none;padding:10px;font-size:16px}
 
 button{
  margin-top:10px;
  background:linear-gradient(135deg,#ffd000,#ff9900);
- border:none;
- padding:12px 30px;
- font-size:18px;
- border-radius:30px;
- cursor:pointer;
- font-weight:bold;
+ border:none;padding:12px 30px;
+ font-size:18px;border-radius:30px;
+ cursor:pointer;font-weight:bold;
 }
 button:hover{transform:scale(1.05)}
-
 </style>
 </head>
 
 <body>
 
 <div id="game">
+ <div id="topBar">
+   <div>❤️ <div id="hpWrap"><div id="hpBar"></div></div></div>
+   <div id="levelText">Level 1</div>
+   <div id="leaderboard">🏆 BXH</div>
+ </div>
 
-<div id="topBar">
-  <div>
-    ❤️ <div id="hpWrap"><div id="hpBar"></div></div>
-  </div>
-  <div id="levelText">Level 1</div>
-  <div id="leaderboard">🏆 BXH</div>
-</div>
-
-<div id="questionBox">
+ <div id="questionBox">
   <div id="q"></div>
   <textarea id="ans" placeholder="Nhập câu trả lời..."></textarea>
   <button onclick="submit()">VƯỢT QUA</button>
-</div>
-
+ </div>
 </div>
 
 <audio id="winSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_41f10929c7.mp3"></audio>
 <audio id="loseSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_1b8bb6f2c5.mp3"></audio>
 
 <script>
-const levels = [
+const levels=[
 [
- {q:"Lão Hạc là nhân vật của tác giả nào?",keys:["nam cao"]},
- {q:"Cậu Vàng là con vật gì?",keys:["chó"]},
- {q:"Hoàn cảnh sống của lão Hạc?",keys:["nghèo","cô đơn"]},
+{q:"Lão Hạc là nhân vật của tác giả nào?",keys:["nam cao"]},
+{q:"Cậu Vàng là con vật gì?",keys:["chó"]},
+{q:"Hoàn cảnh sống của lão Hạc?",keys:["nghèo","cô đơn"]},
 ],
 [
- {q:"Vì sao lão Hạc bán Cậu Vàng?",keys:["nghèo","cho con","mảnh vườn"]},
- {q:"Tâm trạng lão Hạc sau khi bán chó?",keys:["đau","ân hận","day dứt"]},
- {q:"Ý nghĩa của Cậu Vàng?",keys:["kỉ vật","con trai","niềm an ủi"]},
+{q:"Vì sao lão Hạc bán Cậu Vàng?",keys:["nghèo","con","vườn"]},
+{q:"Tâm trạng lão Hạc sau khi bán chó?",keys:["đau","ân hận","day dứt"]},
+{q:"Ý nghĩa hình tượng Cậu Vàng?",keys:["con","kỉ vật","niềm an ủi"]},
 ],
 [
- {q:"Biểu hiện lòng tự trọng của lão Hạc?",keys:["tự trọng","không nhận","thà chết"]},
- {q:"Vai trò của ông giáo?",keys:["nhân đạo","kể","chứng kiến"]},
- {q:"Bi kịch của lão Hạc?",keys:["nghèo","cô đơn","bế tắc"]},
+{q:"Biểu hiện lòng tự trọng của lão Hạc?",keys:["tự trọng","không nhận","chết"]},
+{q:"Vai trò ông giáo?",keys:["nhân đạo","chứng kiến","kể"]},
 ],
 [
- {q:"Giá trị nhân đạo của truyện?",keys:["nhân đạo","cảm thông","phẩm giá"]},
- {q:"Vì sao Nam Cao cho lão Hạc chết bằng bả chó?",keys:["cậu vàng","dằn vặt","tố cáo"]},
- {q:"Quan niệm Nam Cao về con người?",keys:["nhân phẩm","cao quý"]},
+{q:"Giá trị nhân đạo truyện?",keys:["nhân đạo","cảm thông","phẩm giá"]},
+{q:"Ý nghĩa cái chết của lão Hạc?",keys:["tố cáo","xã hội","bi kịch"]},
 ]
 ];
 
@@ -154,17 +97,7 @@ let level=0,questionIndex=0,hp=100;
 
 function updateHP(){
  document.getElementById("hpBar").style.width=hp+"%";
-}
-
-function run(){
- let l=document.getElementById("laohac");
- l.style.left=(parseInt(l.style.left||40)+100)+"px";
-}
-
-function jump(){
- let l=document.getElementById("laohac");
- l.style.bottom="200px";
- setTimeout(()=>l.style.bottom="80px",400);
+ document.getElementById("levelText").innerText="Level "+(level+1);
 }
 
 function submit(){
@@ -172,11 +105,7 @@ function submit(){
  let k=levels[level][questionIndex].keys;
  let hit=0; k.forEach(x=>{if(a.includes(x))hit++;});
 
- if(hit>=2){run();}
- else{
-  hp-=25;updateHP();jump();
-  if(hp<=0) end(false);
- }
+ if(hit>=2){} else{hp-=25;updateHP();}
 
  questionIndex++;
  next();
@@ -188,38 +117,37 @@ function next(){
   if(level>=levels.length){end(true);return;}
   alert("🎯 Sang cấp độ "+(level+1));
  }
- let q=levels[level][questionIndex];
- document.getElementById("q").innerText="Level "+(level+1)+" – Cửa "+(questionIndex+1)+": "+q.q;
+ document.getElementById("q").innerText="Level "+(level+1)+" – "+levels[level][questionIndex].q;
  document.getElementById("ans").value="";
+ if(hp<=0) end(false);
 }
 
 function end(win){
  if(win){
   document.getElementById("winSound").play();
-  let name=prompt("Tên bạn?");
+  let name=prompt("Tên bạn:");
   let board=JSON.parse(localStorage.getItem("bxh")||"[]");
   board.push({name,score:hp});
   board.sort((a,b)=>b.score-a.score);
   localStorage.setItem("bxh",JSON.stringify(board.slice(0,5)));
-  showBoard();
   alert("🎉 Bạn đã cứu được Lão Hạc!");
- }else{
+ } else {
   document.getElementById("loseSound").play();
   alert("💀 Lão Hạc gục ngã!");
  }
- location.reload();
+
+ level=0;questionIndex=0;hp=100;updateHP();
+ showBoard();next();
 }
 
 function showBoard(){
- let board=JSON.parse(localStorage.getItem("bxh")||"[]");
- let html="";
- board.forEach(x=>html+=x.name+" : "+x.score+"<br>");
- document.getElementById("board").innerHTML=html;
+ let b=JSON.parse(localStorage.getItem("bxh")||"[]");
+ let h="";b.forEach(x=>h+=x.name+" : "+x.score+"<br>");
+ document.getElementById("leaderboard").innerHTML="🏆 BXH<br>"+h;
 }
 
-showBoard(); updateHP(); next();
+showBoard();updateHP();next();
 </script>
 
 </body>
 </html>
-
