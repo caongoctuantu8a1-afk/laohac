@@ -143,7 +143,22 @@ textarea{
 </div>
 
 <script>
-/* QUESTIONS */
+/* ============================
+   KHAI BÁO BIẾN
+============================ */
+const hero = document.getElementById("hero");
+const game = document.getElementById("game");
+
+const ans = document.getElementById("ans");
+let gameLoopId;
+
+let heroY=0, velY=0, gravity=0.8, jumping=false;
+let obstacles=[], gate=null;
+let hp=100, qIndex=0, playing=false;
+
+/* ============================
+   CÂU HỎI
+============================ */
 const questions=[
 {q:"Tác giả Lão Hạc là ai?",keys:["nam cao"]},
 {q:"Cậu Vàng là con gì?",keys:["chó"]},
@@ -157,12 +172,9 @@ const questions=[
 {q:"Ý nghĩa cái chết của lão Hạc?",keys:["bi kịch","tố cáo"]},
 ];
 
-
-let game,heroY=0,velY=0,gravity=0.8,jumping=false;
-let obstacles=[],gate=null;
-let hp=100,qIndex=0,playing=false;
-
-/* START */
+/* ============================
+   GAME START / RESET
+============================ */
 function startGame(){
  document.getElementById("startScreen").classList.add("hidden");
  playing=true;
@@ -170,110 +182,142 @@ function startGame(){
  loop();
 }
 
-/* LOOP */
+function resetGame(){
+ location.reload();
+}
+
+/* ============================
+   LOOP GAME
+============================ */
 function loop(){
- if(!playing)return;
+ if(!playing) return;
 
- velY+=gravity;
- heroY+=velY;
- if(heroY<0){heroY=0;velY=0;jumping=false}
- hero.style.bottom=(80+heroY)+"px";
+ // gravity
+ velY += gravity;
+ heroY += velY;
+ if(heroY < 0){ heroY=0; velY=0; jumping=false; }
+ hero.style.bottom = (80 + heroY) + "px";
 
+ // obstacles
  obstacles.forEach(o=>{
-  o.x-=6;
-  o.el.style.left=o.x+"px";
+  o.x -= 6;
+  o.el.style.left = o.x + "px";
   if(checkHit(o.el)){
-   hp-=20;updateHP();
-   o.x=-100;
-   if(hp<=0) endGame();
+   hp -= 20; updateHP();
+   o.x = -100;
+   if(hp <= 0) endGame();
   }
  });
 
+ // gate
  if(gate){
-  gate.x-=6;
-  gate.el.style.left=gate.x+"px";
+  gate.x -= 6;
+  gate.el.style.left = gate.x + "px";
   if(checkHit(gate.el)){
    openQuestion();
   }
  }
 
- requestAnimationFrame(loop);
+ gameLoopId = requestAnimationFrame(loop);
 }
 
-/* JUMP */
-document.addEventListener("keydown",e=>{
+/* ============================
+   NHẢY
+============================ */
+document.addEventListener("keydown", e=>{
  if(e.code==="Space" && !jumping){
-  velY=15;jumping=true;
+  velY=15; jumping=true;
  }
 });
-document.addEventListener("touchstart",()=>{
+document.addEventListener("touchstart", ()=>{
  if(!jumping){
-  velY=15;jumping=true;
+  velY=15; jumping=true;
  }
 });
 
-/* SPAWN */
+/* ============================
+   SPAWN OBSTACLE & GATE
+============================ */
 function spawnObstacle(){
- let o=document.createElement("div");
- o.className="obstacle";
+ let o = document.createElement("div");
+ o.className = "obstacle";
+ o.style.left = window.innerWidth + "px";
  game.appendChild(o);
- obstacles.push({el:o,x:window.innerWidth});
- setTimeout(spawnGate,4000);
+ obstacles.push({el:o, x:window.innerWidth});
+
+ // spawn gate sau 4 giây
+ setTimeout(spawnGate, 4000);
+
+ // spawn tiếp obstacle khác sau 2-4 giây ngẫu nhiên
+ setTimeout(spawnObstacle, Math.random()*2000 + 2000);
 }
 
 function spawnGate(){
- gate={el:document.createElement("div"),x:window.innerWidth};
- gate.el.id="gate";
+ if(gate) return; // tránh spawn nhiều gate
+ gate = {el: document.createElement("div"), x: window.innerWidth};
+ gate.el.id = "gate";
+ gate.el.style.left = gate.x + "px";
  game.appendChild(gate.el);
 }
 
-/* COLLISION */
+/* ============================
+   COLLISION
+============================ */
 function checkHit(el){
- let h=hero.getBoundingClientRect();
- let o=el.getBoundingClientRect();
- return !(h.right<o.left||h.left>o.right||h.bottom<o.top||h.top>o.bottom);
+ let h = hero.getBoundingClientRect();
+ let o = el.getBoundingClientRect();
+ return !(h.right < o.left || h.left > o.right || h.bottom < o.top || h.top > o.bottom);
 }
 
-/* QUESTION */
+/* ============================
+   CÂU HỎI
+============================ */
 function openQuestion(){
  playing=false;
- gate.el.remove();gate=null;
+ if(gate){ gate.el.remove(); gate=null; }
  document.getElementById("questionBox").style.display="block";
- document.getElementById("q").innerText=questions[qIndex].q;
+ document.getElementById("q").innerText = questions[qIndex].q;
 }
 
 function checkAnswer(){
- let a=ans.value.toLowerCase();
- let hit=0;
- questions[qIndex].keys.forEach(k=>{if(a.includes(k))hit++;});
+ let a = ans.value.toLowerCase();
+ let hit = 0;
+ questions[qIndex].keys.forEach(k=>{ if(a.includes(k)) hit++; });
  document.getElementById("questionBox").style.display="none";
- ans.value="";
+ ans.value = "";
  qIndex++;
- if(hit<1){hp-=20;updateHP();}
- if(qIndex>=questions.length){alert("🎉 Đã cứu được Lão Hạc!");resetGame();}
+ if(hit<1){ hp -= 20; updateHP(); }
+ if(qIndex >= questions.length){ 
+  alert("🎉 Đã cứu được Lão Hạc!"); 
+  resetGame(); 
+  return;
+ }
  playing=true;
  spawnObstacle();
 }
 
-/* HUD */
+/* ============================
+   HUD
+============================ */
 function updateHP(){
- document.getElementById("hpBar").style.width=hp+"%";
+ document.getElementById("hpBar").style.width = hp + "%";
 }
 
-/* END */
+/* ============================
+   END GAME
+============================ */
 function endGame(){
  playing=false;
  document.getElementById("gameOver").classList.remove("hidden");
 }
 
-function resetGame(){
- location.reload();
-}
-
-const hero=document.getElementById("hero");
-const game=document.getElementById("game");
+/* ============================
+   INIT
+============================ */
 updateHP();
+
 </script>
 
 </body>
 </html>
+
