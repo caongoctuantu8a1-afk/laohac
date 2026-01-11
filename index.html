@@ -4,136 +4,99 @@
 <meta charset="UTF-8">
 <title>Anh hùng cứu Lão Hạc</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body{margin:0;overflow:hidden;font-family:Segoe UI,sans-serif;background:#000}
 
+/* GAME AREA */
 #game{
- width:100vw;height:100vh;
- background:#222;
+ width:100vw; height:100vh;
  position:relative;
+ overflow:hidden;
+ background:url("background.jpg") repeat-x;
+ background-size:cover;
 }
 
-/* Screens */
+/* SCREENS */
 .screen{
- position:absolute;top:0;left:0;
- width:100%;height:100%;
- background:rgba(0,0,0,.85);
- display:flex;
- flex-direction:column;
- align-items:center;
- justify-content:center;
- color:white;
- z-index:10;
+ position:absolute; top:0; left:0;
+ width:100%; height:100%;
+ background:rgba(0,0,0,0.85);
+ display:flex; flex-direction:column;
+ align-items:center; justify-content:center;
+ color:white; z-index:10;
 }
 .hidden{display:none}
-
 button{
- padding:14px 36px;
- font-size:22px;
- border:none;
- border-radius:40px;
- background:linear-gradient(135deg,#ffd000,#ff8c00);
- font-weight:bold;
- cursor:pointer;
+ padding:14px 36px; font-size:22px; border:none;
+ border-radius:40px; background:linear-gradient(135deg,#ffd000,#ff8c00);
+ font-weight:bold; cursor:pointer;
 }
 
 /* HUD */
 #hud{
- position:absolute;top:10px;left:10px;
- color:white;font-size:16px;
- z-index:5;
+ position:absolute;top:10px;left:10px;color:white;font-size:16px;z-index:5;
 }
-#hpWrap{
- width:160px;height:14px;
- border:2px solid white;border-radius:10px;
- overflow:hidden;margin-top:5px;
-}
-#hpBar{
- height:100%;width:100%;
- background:linear-gradient(to right,#00ff55,#aaff00);
-}
+#hpWrap{width:160px;height:14px;border:2px solid white;border-radius:10px;overflow:hidden;margin-top:5px;}
+#hpBar{height:100%;width:100%;background:linear-gradient(to right,#00ff55,#aaff00);}
 
-/* World */
+/* WORLD */
 #ground{
- position:absolute;bottom:0;left:0;
- width:100%;height:80px;
- background:#333;
+ position:absolute;bottom:0;left:0;width:100%;height:80px;background:#333;
 }
 
-/* Hero */
+/* HERO */
 #hero{
- position:absolute;
- bottom:80px;left:80px;
- width:60px;height:80px;
- background:red; /* tạm màu đỏ, thay bằng hero.png */
+ position:absolute;bottom:80px;left:80px;width:60px;height:80px;
+ background:url("hero.png") center/contain no-repeat;
+ transition: bottom 0.1s linear;
 }
 
-/* Obstacle */
+/* OBSTACLE */
 .obstacle{
- position:absolute;
- bottom:80px;
- width:50px;height:50px;
- background:green; /* tạm màu xanh, thay bằng rock.png */
+ position:absolute;bottom:80px;width:50px;height:50px;
+ background:url("rock.png") center/contain no-repeat;
 }
 
-/* Gate */
+/* GATE */
 #gate{
- position:absolute;
- bottom:80px;
- width:80px;height:100px;
- background:blue; /* tạm màu xanh dương, thay bằng gate.png */
+ position:absolute;bottom:80px;width:80px;height:100px;
+ background:url("gate.png") center/contain no-repeat;
 }
 
-/* Question box */
+/* QUESTION BOX */
 #questionBox{
- position:absolute;
- bottom:100px;
- left:0;right:0;margin:auto;
- width:92%;max-width:600px;
- background:rgba(0,0,0,.9);
- border-radius:20px;
- padding:20px;
- color:white;
- z-index:9;
- display:none;
+ position:absolute;bottom:100px;left:0;right:0;margin:auto;
+ width:92%;max-width:600px;background:rgba(0,0,0,0.9);
+ border-radius:20px;padding:20px;color:white;z-index:9;display:none;
 }
-textarea{
- width:100%;height:80px;
- border-radius:10px;border:none;
- padding:10px;font-size:16px;
-}
+textarea{width:100%;height:80px;border-radius:10px;border:none;padding:10px;font-size:16px;}
 </style>
 </head>
-
 <body>
 
 <div id="game">
 
-<!-- START -->
+<!-- START SCREEN -->
 <div id="startScreen" class="screen">
  <h1>🏃 Anh hùng cứu Lão Hạc</h1>
  <p>Chạy – Nhảy – Trả lời câu hỏi để vượt bi kịch</p>
  <button id="btnStart">BẮT ĐẦU</button>
 </div>
 
-<!-- GAME OVER -->
+<!-- GAME OVER SCREEN -->
 <div id="gameOver" class="screen hidden">
  <h1>💀 GAME OVER</h1>
  <button id="btnRestart">CHƠI LẠI</button>
 </div>
 
 <!-- HUD -->
-<div id="hud">
- ❤️ Máu
- <div id="hpWrap"><div id="hpBar"></div></div>
-</div>
+<div id="hud">❤️ Máu<div id="hpWrap"><div id="hpBar"></div></div></div>
 
 <!-- WORLD -->
 <div id="hero"></div>
 <div id="ground"></div>
 
-<!-- QUESTION -->
+<!-- QUESTION BOX -->
 <div id="questionBox">
  <div id="q"></div>
  <textarea id="ans"></textarea>
@@ -145,13 +108,12 @@ textarea{
 <script>
 window.onload = function(){
 
-/* ============================
-   KHAI BÁO BIẾN
-============================ */
+// =====================
+// KHAI BÁO BIẾN
+// =====================
 const hero = document.getElementById("hero");
 const game = document.getElementById("game");
 const ans = document.getElementById("ans");
-
 const startScreen = document.getElementById("startScreen");
 const gameOverScreen = document.getElementById("gameOver");
 const questionBox = document.getElementById("questionBox");
@@ -160,10 +122,11 @@ let heroY=0, velY=0, gravity=0.8, jumping=false;
 let obstacles=[], gate=null;
 let hp=100, qIndex=0, playing=false;
 let gameLoopId;
+let bgX=0;
 
-/* ============================
-   CÂU HỎI
-============================ */
+// =====================
+// CÂU HỎI
+// =====================
 const questions=[
 {q:"Tác giả Lão Hạc là ai?",keys:["nam cao"]},
 {q:"Cậu Vàng là con gì?",keys:["chó"]},
@@ -177,9 +140,9 @@ const questions=[
 {q:"Ý nghĩa cái chết của lão Hạc?",keys:["bi kịch","tố cáo"]},
 ];
 
-/* ============================
-   START / RESET
-============================ */
+// =====================
+// START / RESET
+// =====================
 function startGame(){
  startScreen.classList.add("hidden");
  playing=true;
@@ -191,11 +154,15 @@ function resetGame(){
  location.reload();
 }
 
-/* ============================
-   LOOP GAME
-============================ */
+// =====================
+// LOOP GAME
+// =====================
 function loop(){
  if(!playing) return;
+
+ // nền parallax
+ bgX -= 2;
+ game.style.backgroundPositionX = bgX + "px";
 
  // gravity
  velY += gravity;
@@ -208,8 +175,8 @@ function loop(){
   o.x -= 6;
   o.el.style.left = o.x+"px";
   if(checkHit(o.el)){
-   hp -= 20; updateHP();
-   o.x = -100;
+   hp-=20; updateHP();
+   o.x=-100;
    if(hp<=0) endGame();
   }
  });
@@ -217,7 +184,7 @@ function loop(){
  // gate
  if(gate){
   gate.x -= 6;
-  gate.el.style.left = gate.x + "px";
+  gate.el.style.left = gate.x+"px";
   if(checkHit(gate.el)){
    openQuestion();
   }
@@ -226,9 +193,9 @@ function loop(){
  gameLoopId = requestAnimationFrame(loop);
 }
 
-/* ============================
-   NHẢY
-============================ */
+// =====================
+// NHẢY
+// =====================
 document.addEventListener("keydown", e=>{
  if(e.code==="Space" && !jumping){ velY=15; jumping=true; }
 });
@@ -236,41 +203,40 @@ document.addEventListener("touchstart", ()=>{
  if(!jumping){ velY=15; jumping=true; }
 });
 
-/* ============================
-   SPAWN OBSTACLE & GATE
-============================ */
+// =====================
+// SPAWN OBSTACLE & GATE
+// =====================
 function spawnObstacle(){
  let o = document.createElement("div");
  o.className="obstacle";
  o.x = window.innerWidth;
  o.style.left = o.x + "px";
  game.appendChild(o);
- obstacles.push({el:o, x:o.x});
-
+ obstacles.push({el:o,x:o.x});
  setTimeout(spawnGate, 4000);
- setTimeout(spawnObstacle, Math.random()*2000 + 2000);
+ setTimeout(spawnObstacle, Math.random()*2000+2000);
 }
 
 function spawnGate(){
  if(gate) return;
- gate = {el: document.createElement("div"), x: window.innerWidth};
+ gate={el:document.createElement("div"),x:window.innerWidth};
  gate.el.id="gate";
- gate.el.style.left = gate.x + "px";
+ gate.el.style.left = gate.x+"px";
  game.appendChild(gate.el);
 }
 
-/* ============================
-   COLLISION
-============================ */
+// =====================
+// COLLISION
+// =====================
 function checkHit(el){
  let h = hero.getBoundingClientRect();
  let o = el.getBoundingClientRect();
  return !(h.right < o.left || h.left > o.right || h.bottom < o.top || h.top > o.bottom);
 }
 
-/* ============================
-   CÂU HỎI
-============================ */
+// =====================
+// CÂU HỎI
+// =====================
 function openQuestion(){
  playing=false;
  if(gate){ gate.el.remove(); gate=null; }
@@ -283,45 +249,38 @@ function checkAnswer(){
  let hit = 0;
  questions[qIndex].keys.forEach(k=>{ if(a.includes(k)) hit++; });
  questionBox.style.display="none";
- ans.value = "";
+ ans.value="";
  qIndex++;
- if(hit<1){ hp -= 20; updateHP(); }
- if(qIndex >= questions.length){
-  alert("🎉 Đã cứu được Lão Hạc!");
-  resetGame();
-  return;
- }
+ if(hit<1){ hp -=20; updateHP(); }
+ if(qIndex>=questions.length){ alert("🎉 Đã cứu được Lão Hạc!"); resetGame(); return; }
  playing=true;
  spawnObstacle();
 }
 
-/* ============================
-   HUD
-============================ */
+// =====================
+// HUD
+// =====================
 function updateHP(){
  document.getElementById("hpBar").style.width = hp+"%";
 }
 
-/* ============================
-   END GAME
-============================ */
+// =====================
+// END GAME
+// =====================
 function endGame(){
  playing=false;
  gameOverScreen.classList.remove("hidden");
 }
 
-/* ============================
-   EVENT BUTTONS
-============================ */
+// =====================
+// BUTTON EVENTS
+// =====================
 document.getElementById("btnStart").addEventListener("click", startGame);
 document.getElementById("btnRestart").addEventListener("click", resetGame);
 document.getElementById("btnAnswer").addEventListener("click", checkAnswer);
 
-/* ============================
-   INIT
-============================ */
+// INIT
 updateHP();
-
 }
 </script>
 
