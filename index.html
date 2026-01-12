@@ -8,256 +8,182 @@
 <style>
 body{
  margin:0;
- font-family:Segoe UI, sans-serif;
- background:black;
+ font-family:'Segoe UI',sans-serif;
+ background:#f2f2f2;
 }
 
-/* GAME BACKGROUND */
 #game{
- width:100vw;
- height:100vh;
- background:
- linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.85)),
- url("laohac1.jpg") center/cover no-repeat;
+ width:100vw;height:100vh;
+ background:url("background.jpg") center/cover no-repeat;
  position:relative;
- color:white;
  overflow:hidden;
 }
 
-/* TOP BAR */
-#topBar{
+/* Progress bar */
+#top{
+ position:absolute;top:10px;left:5%;
+ width:90%;
+ background:white;
+ border-radius:20px;
+ padding:10px;
+ box-shadow:0 5px 15px rgba(0,0,0,.2);
+}
+#barWrap{width:100%;height:14px;background:#ddd;border-radius:10px;overflow:hidden}
+#bar{height:100%;background:linear-gradient(to right,#ff9800,#4caf50);width:0%}
+#percent{text-align:right;font-size:14px;margin-top:4px}
+
+/* Character area */
+#stage{
+ position:absolute;top:80px;left:0;
+ width:100%;height:40%;
+}
+#dog{
  position:absolute;
- top:0;left:0;
- width:100%;
- height:60px;
- background:linear-gradient(90deg,#000,#222);
- display:flex;
- align-items:center;
- justify-content:space-between;
- padding:0 15px;
- box-sizing:border-box;
- z-index:2;
+ bottom:10px;left:5%;
+ width:80px;
+ transition:1s;
 }
-
-#hpWrap{
- width:160px;
- height:14px;
- border:2px solid #0f0;
- border-radius:10px;
- overflow:hidden;
-}
-#hpBar{
- height:100%;
- background:linear-gradient(to right,#00ff55,#aaff00);
- width:100%;
-}
-
-#leaderboard{
- cursor:pointer;
- color:#ffd700;
-}
-
-/* QUESTION BOX */
-#questionBox{
+#gate{
  position:absolute;
- bottom:40px;
- left:0;
- right:0;
- margin:auto;
- width:92%;
- max-width:700px;
- background:linear-gradient(145deg,#111,#000);
- border-radius:25px;
- padding:20px;
- box-shadow:0 0 40px rgba(255,200,50,.6);
- box-sizing:border-box;
- z-index:2;
+ bottom:10px;right:5%;
+ width:80px;
 }
 
-#q{
- font-size:20px;
- font-weight:bold;
- margin-bottom:10px;
- color:#ffd700;
+/* Question box */
+#card{
+ position:absolute;
+ bottom:10px;left:5%;
+ width:90%;
+ background:white;
+ border-radius:20px;
+ padding:15px;
+ box-shadow:0 10px 25px rgba(0,0,0,.3);
 }
-
+#level{color:#4caf50;font-weight:bold}
+#q{font-size:18px;margin:8px 0}
 textarea{
  width:100%;
- height:80px;
- border-radius:12px;
- border:none;
- padding:10px;
+ height:60px;
+ border-radius:10px;
+ border:1px solid #ccc;
+ padding:8px;
  font-size:16px;
- box-sizing:border-box;
- outline:none;
 }
-
 button{
  margin-top:10px;
- background:linear-gradient(135deg,#ffd000,#ff8c00);
- border:none;
- padding:12px 30px;
- font-size:18px;
- border-radius:30px;
- cursor:pointer;
- font-weight:bold;
- box-shadow:0 0 15px orange;
-}
-button:hover{transform:scale(1.05)}
-
-/* START & GAME OVER */
-#startScreen,#gameOverScreen{
- position:fixed;
- top:0;left:0;
  width:100%;
- height:100%;
- background:
- linear-gradient(rgba(0,0,0,.8),rgba(0,0,0,.9)),
- url("background.jpg") center/cover;
+ padding:12px;
+ background:#ff9800;
+ border:none;
+ color:white;
+ font-size:18px;
+ border-radius:15px;
+}
+
+/* Screens */
+.screen{
+ position:fixed;top:0;left:0;
+ width:100%;height:100%;
+ background:rgba(0,0,0,.8);
  display:flex;
  align-items:center;
  justify-content:center;
- z-index:10;
+ z-index:5;
 }
-#gameOverScreen{display:none;}
-
-.startBox{
- background:rgba(0,0,0,.9);
- padding:40px;
- border-radius:25px;
+.box{
+ background:white;
+ padding:30px;
+ border-radius:20px;
  text-align:center;
- border:2px solid gold;
- box-shadow:0 0 40px gold;
 }
-
-.startBox h1{
- color:#ffd700;
- font-size:36px;
- text-shadow:0 0 20px orange;
-}
-
-.startBox p{color:white;font-size:18px}
 </style>
 </head>
 
 <body>
 
-<div id="startScreen">
- <div class="startBox">
-  <h1>GIẢI CỨU LÃO HẠC</h1>
-  <p>Trả lời câu hỏi để vượt chướng ngại vật</p>
-  <button onclick="startGame()">BẮT ĐẦU</button>
+<div id="start" class="screen">
+ <div class="box">
+  <h1>🐕 CẬU VÀNG GIẢI CỨU LÃO HẠC</h1>
+  <p>Trả lời 10 câu hỏi để đưa Cậu Vàng về nhà</p>
+  <button onclick="startGame()">Bắt đầu</button>
  </div>
 </div>
 
-<div id="gameOverScreen">
- <div class="startBox">
-  <h1>GAME OVER</h1>
-  <p id="finalScore"></p>
-  <button onclick="startGame()">CHƠI LẠI</button>
+<div id="win" class="screen" style="display:none">
+ <div class="box">
+  <h1>🎉 LÃO HẠC ĐÃ ĐƯỢC CỨU!</h1>
+  <img src="laohac1.jpg" width="200"><br><br>
+  <button onclick="startGame()">Chơi lại</button>
  </div>
 </div>
 
 <div id="game">
-
- <div id="topBar">
-  <div>❤️ <div id="hpWrap"><div id="hpBar"></div></div></div>
-  <div id="levelText">Level 1</div>
-  <div id="leaderboard" onclick="showBoard()">🏆 BXH</div>
+ <div id="top">
+  <div id="barWrap"><div id="bar"></div></div>
+  <div id="percent">0%</div>
  </div>
 
- <div id="questionBox">
+ <div id="stage">
+  <img id="dog" src="hero.png">
+  <img id="gate" src="gate.png">
+ </div>
+
+ <div id="card">
+  <div id="level">Câu 1/10</div>
   <div id="q"></div>
   <textarea id="ans" placeholder="Nhập câu trả lời..."></textarea>
-  <button onclick="submit()">VƯỢT QUA</button>
+  <button onclick="check()">Trả lời</button>
  </div>
-
 </div>
 
-<audio id="winSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_41f10929c7.mp3"></audio>
-<audio id="loseSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_1b8bb6f2c5.mp3"></audio>
-
 <script>
-const levels=[
-[
-{q:"Lão Hạc là nhân vật của tác giả nào?",keys:["nam cao"]},
-{q:"Cậu Vàng là con vật gì?",keys:["chó"]},
-{q:"Hoàn cảnh sống của lão Hạc?",keys:["nghèo","cô đơn"]},
-],
-[
-{q:"Vì sao lão Hạc bán Cậu Vàng?",keys:["nghèo","con","vườn"]},
-{q:"Tâm trạng lão Hạc sau khi bán chó?",keys:["đau","ân hận","day dứt"]},
-{q:"Ý nghĩa hình tượng Cậu Vàng?",keys:["kỉ vật","niềm an ủi"]},
-],
-[
-{q:"Biểu hiện lòng tự trọng của lão Hạc?",keys:["tự trọng","không nhận","chết"]},
-{q:"Vai trò ông giáo?",keys:["nhân đạo","chứng kiến"]},
-],
-[
-{q:"Giá trị nhân đạo truyện?",keys:["nhân đạo","cảm thông"]},
-{q:"Ý nghĩa cái chết của lão Hạc?",keys:["tố cáo","bi kịch","xã hội"]},
-]
+const questions=[
+{q:"Lão Hạc là nhân vật của tác giả nào?",k:["nam cao"]},
+{q:"Cậu Vàng là con gì?",k:["chó"]},
+{q:"Hoàn cảnh của Lão Hạc?",k:["nghèo","cô đơn"]},
+{q:"Vì sao Lão Hạc bán Cậu Vàng?",k:["nghèo","con","vườn"]},
+{q:"Sau khi bán chó lão Hạc thế nào?",k:["đau","day dứt"]},
+{q:"Cậu Vàng tượng trưng cho?",k:["kỉ vật","tình cảm"]},
+{q:"Đức tính nổi bật của Lão Hạc?",k:["tự trọng"]},
+{q:"Ông giáo có vai trò gì?",k:["chứng kiến","nhân đạo"]},
+{q:"Giá trị nhân đạo truyện?",k:["nhân đạo","cảm thông"]},
+{q:"Ý nghĩa cái chết Lão Hạc?",k:["bi kịch","xã hội"]},
 ];
 
-let level=0,questionIndex=0,hp=100;
-
-function updateHP(){
- document.getElementById("hpBar").style.width=hp+"%";
- document.getElementById("levelText").innerText="Level "+(level+1);
-}
-
-function submit(){
- let a=document.getElementById("ans").value.toLowerCase();
- let k=levels[level][questionIndex].keys;
- let hit=0; k.forEach(x=>{if(a.includes(x))hit++;});
- if(hit<2) hp-=25;
- updateHP();
- questionIndex++;
- next();
-}
-
-function next(){
- if(hp<=0){end(false);return;}
- if(questionIndex>=levels[level].length){
-  level++;questionIndex=0;
-  if(level>=levels.length){end(true);return;}
-  alert("🎯 Sang cấp độ "+(level+1));
- }
- document.getElementById("q").innerText="Level "+(level+1)+" – "+levels[level][questionIndex].q;
- document.getElementById("ans").value="";
-}
-
-function end(win){
- if(win){
-  document.getElementById("winSound").play();
-  let name=prompt("Tên bạn:");
-  let board=JSON.parse(localStorage.getItem("bxh")||"[]");
-  board.push({name,score:hp});
-  board.sort((a,b)=>b.score-a.score);
-  localStorage.setItem("bxh",JSON.stringify(board.slice(0,5)));
-  alert("🎉 Bạn đã cứu được Lão Hạc!");
- } else {
-  document.getElementById("loseSound").play();
-  document.getElementById("finalScore").innerText="Điểm của bạn: "+hp;
-  document.getElementById("gameOverScreen").style.display="flex";
- }
-}
-
-function showBoard(){
- let b=JSON.parse(localStorage.getItem("bxh")||"[]");
- let h=""; b.forEach(x=>h+=x.name+" : "+x.score+"<br>");
- document.getElementById("leaderboard").innerHTML="🏆 BXH<br>"+h;
-}
+let i=0;
 
 function startGame(){
- document.getElementById("startScreen").style.display="none";
- document.getElementById("gameOverScreen").style.display="none";
- level=0;questionIndex=0;hp=100;
- updateHP();
- next();
+ document.getElementById("start").style.display="none";
+ document.getElementById("win").style.display="none";
+ i=0;
+ document.getElementById("dog").style.left="5%";
+ load();
 }
 
-updateHP();
+function load(){
+ document.getElementById("q").innerText=questions[i].q;
+ document.getElementById("level").innerText="Câu "+(i+1)+"/10";
+ document.getElementById("ans").value="";
+ document.getElementById("bar").style.width=(i*10)+"%";
+ document.getElementById("percent").innerText=(i*10)+"%";
+}
+
+function check(){
+ let a=document.getElementById("ans").value.toLowerCase();
+ let ok=false;
+ questions[i].k.forEach(k=>{if(a.includes(k))ok=true;});
+ if(ok){
+   i++;
+   document.getElementById("dog").style.left=(5+i*8)+"%";
+   if(i>=10){
+     document.getElementById("win").style.display="flex";
+   } else load();
+ } else {
+   alert("❌ Sai rồi! Thử lại!");
+ }
+}
+
+load();
 </script>
 
 </body>
