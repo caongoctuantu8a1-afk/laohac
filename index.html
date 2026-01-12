@@ -6,29 +6,58 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{margin:0;font-family:Segoe UI,sans-serif;background:#000}
+body{
+ margin:0;
+ font-family:Segoe UI, sans-serif;
+ background:black;
+}
+
+/* GAME BACKGROUND */
 #game{
- width:100vw;height:100vh;
+ width:100vw;
+ height:100vh;
  background:
- linear-gradient(to bottom,rgba(0,0,0,.6),rgba(0,0,0,.9)),
+ linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.85)),
  url("laohac1.jpg") center/cover no-repeat;
- color:white;position:relative;
+ position:relative;
+ color:white;
+ overflow:hidden;
 }
 
-/* Top bar */
+/* TOP BAR */
 #topBar{
- position:absolute;top:0;left:0;
- width:100%;height:60px;
- background:rgba(0,0,0,.7);
- display:flex;align-items:center;
+ position:absolute;
+ top:0;left:0;
+ width:100%;
+ height:60px;
+ background:linear-gradient(90deg,#000,#222);
+ display:flex;
+ align-items:center;
  justify-content:space-between;
- padding:0 15px;box-sizing:border-box;
+ padding:0 15px;
+ box-sizing:border-box;
+ z-index:2;
 }
 
-#hpWrap{width:180px;height:14px;border:2px solid white;border-radius:10px;overflow:hidden}
-#hpBar{height:100%;background:linear-gradient(to right,#00ff55,#aaff00);width:100%}
+#hpWrap{
+ width:160px;
+ height:14px;
+ border:2px solid #0f0;
+ border-radius:10px;
+ overflow:hidden;
+}
+#hpBar{
+ height:100%;
+ background:linear-gradient(to right,#00ff55,#aaff00);
+ width:100%;
+}
 
-/* Question box (fixed centering) */
+#leaderboard{
+ cursor:pointer;
+ color:#ffd700;
+}
+
+/* QUESTION BOX */
 #questionBox{
  position:absolute;
  bottom:40px;
@@ -37,46 +66,104 @@ body{margin:0;font-family:Segoe UI,sans-serif;background:#000}
  margin:auto;
  width:92%;
  max-width:700px;
- background:rgba(0,0,0,.85);
- border-radius:20px;
+ background:linear-gradient(145deg,#111,#000);
+ border-radius:25px;
  padding:20px;
- box-shadow:0 0 40px rgba(255,200,50,.4);
+ box-shadow:0 0 40px rgba(255,200,50,.6);
  box-sizing:border-box;
+ z-index:2;
 }
 
-#q{font-size:20px;font-weight:bold;margin-bottom:10px}
+#q{
+ font-size:20px;
+ font-weight:bold;
+ margin-bottom:10px;
+ color:#ffd700;
+}
+
 textarea{
  width:100%;
  height:80px;
- border-radius:10px;
+ border-radius:12px;
  border:none;
  padding:10px;
  font-size:16px;
  box-sizing:border-box;
+ outline:none;
 }
 
 button{
  margin-top:10px;
- background:linear-gradient(135deg,#ffd000,#ff9900);
+ background:linear-gradient(135deg,#ffd000,#ff8c00);
  border:none;
  padding:12px 30px;
  font-size:18px;
  border-radius:30px;
  cursor:pointer;
  font-weight:bold;
+ box-shadow:0 0 15px orange;
 }
 button:hover{transform:scale(1.05)}
+
+/* START & GAME OVER */
+#startScreen,#gameOverScreen{
+ position:fixed;
+ top:0;left:0;
+ width:100%;
+ height:100%;
+ background:
+ linear-gradient(rgba(0,0,0,.8),rgba(0,0,0,.9)),
+ url("background.jpg") center/cover;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ z-index:10;
+}
+#gameOverScreen{display:none;}
+
+.startBox{
+ background:rgba(0,0,0,.9);
+ padding:40px;
+ border-radius:25px;
+ text-align:center;
+ border:2px solid gold;
+ box-shadow:0 0 40px gold;
+}
+
+.startBox h1{
+ color:#ffd700;
+ font-size:36px;
+ text-shadow:0 0 20px orange;
+}
+
+.startBox p{color:white;font-size:18px}
 </style>
 </head>
 
 <body>
 
+<div id="startScreen">
+ <div class="startBox">
+  <h1>GIẢI CỨU LÃO HẠC</h1>
+  <p>Trả lời câu hỏi để vượt chướng ngại vật</p>
+  <button onclick="startGame()">BẮT ĐẦU</button>
+ </div>
+</div>
+
+<div id="gameOverScreen">
+ <div class="startBox">
+  <h1>GAME OVER</h1>
+  <p id="finalScore"></p>
+  <button onclick="startGame()">CHƠI LẠI</button>
+ </div>
+</div>
+
 <div id="game">
 
  <div id="topBar">
-   <div>❤️ <div id="hpWrap"><div id="hpBar"></div></div></div>
-   <div id="levelText">Level 1</div>
-   <div id="leaderboard">🏆 BXH</div>
+  <div>❤️ <div id="hpWrap"><div id="hpBar"></div></div></div>
+  <div id="levelText">Level 1</div>
+  <div id="leaderboard" onclick="showBoard()">🏆 BXH</div>
  </div>
 
  <div id="questionBox">
@@ -100,15 +187,15 @@ const levels=[
 [
 {q:"Vì sao lão Hạc bán Cậu Vàng?",keys:["nghèo","con","vườn"]},
 {q:"Tâm trạng lão Hạc sau khi bán chó?",keys:["đau","ân hận","day dứt"]},
-{q:"Ý nghĩa hình tượng Cậu Vàng?",keys:["con","kỉ vật","niềm an ủi"]},
+{q:"Ý nghĩa hình tượng Cậu Vàng?",keys:["kỉ vật","niềm an ủi"]},
 ],
 [
 {q:"Biểu hiện lòng tự trọng của lão Hạc?",keys:["tự trọng","không nhận","chết"]},
-{q:"Vai trò ông giáo?",keys:["nhân đạo","chứng kiến","kể"]},
+{q:"Vai trò ông giáo?",keys:["nhân đạo","chứng kiến"]},
 ],
 [
-{q:"Giá trị nhân đạo truyện?",keys:["nhân đạo","cảm thông","phẩm giá"]},
-{q:"Ý nghĩa cái chết của lão Hạc?",keys:["tố cáo","xã hội","bi kịch"]},
+{q:"Giá trị nhân đạo truyện?",keys:["nhân đạo","cảm thông"]},
+{q:"Ý nghĩa cái chết của lão Hạc?",keys:["tố cáo","bi kịch","xã hội"]},
 ]
 ];
 
@@ -123,14 +210,14 @@ function submit(){
  let a=document.getElementById("ans").value.toLowerCase();
  let k=levels[level][questionIndex].keys;
  let hit=0; k.forEach(x=>{if(a.includes(x))hit++;});
-
- if(hit>=2){} else{hp-=25;updateHP();}
-
+ if(hit<2) hp-=25;
+ updateHP();
  questionIndex++;
  next();
 }
 
 function next(){
+ if(hp<=0){end(false);return;}
  if(questionIndex>=levels[level].length){
   level++;questionIndex=0;
   if(level>=levels.length){end(true);return;}
@@ -138,7 +225,6 @@ function next(){
  }
  document.getElementById("q").innerText="Level "+(level+1)+" – "+levels[level][questionIndex].q;
  document.getElementById("ans").value="";
- if(hp<=0) end(false);
 }
 
 function end(win){
@@ -152,20 +238,26 @@ function end(win){
   alert("🎉 Bạn đã cứu được Lão Hạc!");
  } else {
   document.getElementById("loseSound").play();
-  alert("💀 Lão Hạc gục ngã!");
+  document.getElementById("finalScore").innerText="Điểm của bạn: "+hp;
+  document.getElementById("gameOverScreen").style.display="flex";
  }
-
- level=0;questionIndex=0;hp=100;updateHP();
- showBoard();next();
 }
 
 function showBoard(){
  let b=JSON.parse(localStorage.getItem("bxh")||"[]");
- let h="";b.forEach(x=>h+=x.name+" : "+x.score+"<br>");
+ let h=""; b.forEach(x=>h+=x.name+" : "+x.score+"<br>");
  document.getElementById("leaderboard").innerHTML="🏆 BXH<br>"+h;
 }
 
-showBoard();updateHP();next();
+function startGame(){
+ document.getElementById("startScreen").style.display="none";
+ document.getElementById("gameOverScreen").style.display="none";
+ level=0;questionIndex=0;hp=100;
+ updateHP();
+ next();
+}
+
+updateHP();
 </script>
 
 </body>
